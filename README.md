@@ -2,14 +2,14 @@
 
 NativeScript bindings for [@react-three/fiber](https://github.com/pmndrs/react-three-fiber). Write a three.js scene as React, run it native on iOS and Android through `@nativescript/canvas`, render it with WebGPU.
 
-This repo is a review handoff for the react-three-fiber team, not a publish source. The package keeps its real name, `@react-three/nativescript`, but it is marked `private: true` so nothing publishes from here. It depends on the published `@react-three/fiber` alpha, ships a working demo and a starter template, and carries the build + release tooling lifted from react-three-fiber so the wiring is all visible in one place.
+This is a technical preview, meant to be iterated on and eventually folded into the broader react-three and NativeScript ecosystems. The package keeps its real name, `@react-three/nativescript`, but it's marked `private: true`, so nothing publishes from here yet. It runs against the published `@react-three/fiber` alpha and ships a working demo plus a starter template, with the build and release wiring laid out in one place so it's easy to pick apart.
 
 ## What's in here
 
 ```
 react-three-nativescript/
 ├── packages/nativescript/   @react-three/nativescript — the bindings (private:true)
-├── examples/flatland/        the full demo: WebGPU, HDR env, contact shadows, a meshopt model
+├── examples/suzi/        the full demo: WebGPU, HDR env, contact shadows, a meshopt model
 ├── template/                 a minimal starter you scaffold with `ns create`
 └── docs/wasm-loader/         the diagrams below
 ```
@@ -28,7 +28,7 @@ ns run ios      # or: ns run android
 
 You get a bare scene, a lit mesh you can orbit, with the whole decoder/worker pipeline already wired in webpack. Drop a compressed `.glb` in `app/assets`, load it with `useGLTF('~/assets/your-model.glb')`, and it works, no extra config.
 
-Note: `@react-three/nativescript` isn't published to npm yet, so a clean `ns create` against the template won't install it until the react-three-fiber team publishes. Inside this repo it resolves to the local workspace package, so the template builds and runs here today.
+Note: `@react-three/nativescript` isn't published to npm yet, so a clean `ns create` against the template won't install it until the package ships. Inside this repo it resolves to the local workspace package, so the template builds and runs here today.
 
 ## Working in the repo
 
@@ -43,7 +43,7 @@ pnpm format       # prettier
 Then run the demo:
 
 ```bash
-cd examples/flatland
+cd examples/suzi
 ns run ios        # or: ns run android
 ```
 
@@ -120,8 +120,4 @@ On a device, here's where it actually stands:
 - **iOS** (iPhone 16 simulator, iOS 18.5): runs. WebGPU acquires a device and renders the demo at 60 fps, the meshopt model decodes through the WKWebView wasm bridge, no errors. The full pipeline, end to end.
 - **Android** (Pixel 9 emulator): builds, installs, launches, and the JS pipeline runs clean, decoders copied and redirected, polyfills up, WebGL2 fallback chosen because the emulator has no WebGPU. Then the emulator's software GPU aborts in the native canvas GL layer (`SIGABRT` out of Mesa virtio-gpu). That's an emulator-GPU limit, not the bindings; the JS ran identically to iOS up to the renderer. A physical Android device is the call to confirm the render.
 
-`release.yml` is reference-only. The package is `private: true`, so it builds and packs the tarball that _would_ ship and stops there. The real publish line for the react-three-fiber team is in the workflow comments.
-
-## License
-
-MIT. `@react-three/nativescript` is authored by Paul Henschel and the react-three-fiber authors; this repo is assembled and maintained by [@thejustinwalsh](https://github.com/thejustinwalsh) for review.
+`release.yml` is reference-only. The package is `private: true`, so it builds and packs the tarball that _would_ ship and stops there. The real publish line is in the workflow comments.

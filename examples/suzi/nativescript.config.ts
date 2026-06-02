@@ -1,7 +1,7 @@
 import { NativeScriptConfig } from '@nativescript/core'
 
 export default {
-  id: 'org.nativescript.flatlandr3fdemo',
+  id: 'org.nativescript.suzi',
   appPath: 'app',
   appResourcesPath: 'App_Resources',
   android: {

@@ -1,5 +1,27 @@
 import { useLayoutEffect } from 'react'
 import { Center, ContactShadows, OrbitControls, Environment, useGLTF } from '@react-three/drei/webgpu'
+// useThree comes from the package (which re-exports @react-three/fiber/webgpu) so it reads the same
+// r3f context the WebGPU renderer booted — importing it from a different fiber entry reads a null store.
+import { useThree } from '@react-three/nativescript'
+
+// Fit the scene at launch and on rotation. The subjects sit in a wide row, so a fixed FOV is too
+// tight in portrait (no width to spare) and too loose in landscape. Drive FOV off orientation:
+// portrait zooms out, landscape zooms in. r3f re-runs this whenever the canvas size changes.
+const PORTRAIT_FOV = 46
+const LANDSCAPE_FOV = 30
+
+function FitCameraToOrientation() {
+  const camera = useThree((s) => s.camera)
+  const width = useThree((s) => s.size.width)
+  const height = useThree((s) => s.size.height)
+  useLayoutEffect(() => {
+    const persp = camera as unknown as { fov?: number; updateProjectionMatrix: () => void }
+    if (typeof persp.fov !== 'number') return
+    persp.fov = height >= width ? PORTRAIT_FOV : LANDSCAPE_FOV
+    persp.updateProjectionMatrix()
+  }, [camera, width, height])
+  return null
+}
 
 // Exact structure from the reference baking-soft-shadows demo the user pasted,
 // adapted for our NativeScript + runCanvasApp setup + ContactShadows (instead of Accumulative).
@@ -39,6 +61,7 @@ export function Scene() {
         <ContactShadows position={[0, 0, 0]} opacity={0.75} scale={12} blur={2} far={4} color="#1a120b" />
       </group>
 
+      <FitCameraToOrientation />
       <OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} />
 
       {/* Use the project's local HDR (venice_sunset_1k.hdr) — "city" preset requires
