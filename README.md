@@ -16,6 +16,17 @@ react-three-nativescript/
 
 pnpm workspace, unbuild for the package, vitest for the package tests, prettier for format. Same toolchain react-three-fiber uses, minus the parts that don't apply to one binding.
 
+## Versions
+
+This rides the alpha line of react-three. Pin them and bump in lockstep — the WebGPU surface is still moving, and the three pieces are built against each other.
+
+- **`@react-three/fiber` 10.0.0-alpha.x** (pinned `10.0.0-alpha.2`). The WebGPU entry, `@react-three/fiber/webgpu`, is the one this package re-exports. A `^` range floats the alpha to a published `canary` that imports symbols three 0.183 removed, so it's pinned exact.
+- **`@react-three/drei` 11.0.0-alpha.x** (pinned `11.0.0-alpha.5`), used via `@react-three/drei/webgpu`. It still imports `WebGLCubeRenderTarget` from `three/webgpu`, which three renamed to `CubeRenderTarget`; the repo carries a one-line pnpm patch (`patchedDependencies`) to bridge that until drei catches up.
+- **`three` >= 0.183.2** (pinned `0.183.2`). 0.183 is the floor: the WebGPU build's exports shift between three releases and the fiber/drei alphas target a specific one, so three is pinned exact, not floated.
+- **`react` 19.x** (`>=19.0 <19.3`), plus `react-dom` (r3f peers it; the webpack preset drops the alias).
+
+The package declares these as `peerDependencies` with permissive floors; the example and template pin the exact versions above so a build is reproducible.
+
 ## Quick start
 
 The template is the fast path. NativeScript scaffolds a new app straight from it:
@@ -118,6 +129,6 @@ CI runs install, build, typecheck, the vitest suite, and a prettier check on eve
 On a device, here's where it actually stands:
 
 - **iOS** (iPhone 16 simulator, iOS 18.5): runs. WebGPU acquires a device and renders the demo at 60 fps, the meshopt model decodes through the WKWebView wasm bridge, no errors. The full pipeline, end to end.
-- **Android** (Pixel 9 emulator): builds, installs, launches, and the JS pipeline runs clean, decoders copied and redirected, polyfills up, WebGL2 fallback chosen because the emulator has no WebGPU. Then the emulator's software GPU aborts in the native canvas GL layer (`SIGABRT` out of Mesa virtio-gpu). That's an emulator-GPU limit, not the bindings; the JS ran identically to iOS up to the renderer. A physical Android device is the call to confirm the render.
+- **Android** (physical device): renders. The emulator is not a usable target — its software GPU exposes no WebGPU, so the renderer falls back to WebGL2 and the native canvas layer aborts (`SIGABRT` out of Mesa virtio-gpu). On real hardware WebGPU is present and the scene renders. `ns build android` produces the APK regardless of target.
 
 `release.yml` is reference-only. The package is `private: true`, so it builds and packs the tarball that _would_ ship and stops there. The real publish line is in the workflow comments.
