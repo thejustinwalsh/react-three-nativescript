@@ -15,10 +15,10 @@ ns run ios      # or: ns run android
 `app/scene.tsx` is your scene. `app/app.tsx` boots it:
 
 ```tsx
-import { runCanvasApp } from '@react-three/nativescript'
+import { runThreeFiberApp } from '@react-three/nativescript'
 import { Scene } from './scene'
 
-runCanvasApp(<Scene />, {
+runThreeFiberApp(<Scene />, {
   camera: { position: [0, 0, 4], fov: 45 },
   page: { backgroundColor: '#15161a' },
 })

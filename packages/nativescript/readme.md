@@ -5,7 +5,7 @@
 It is the NativeScript sibling of `@react-three/fiber` (web) and `@react-three/native` (React Native). The reconciler and core are platform-neutral and untouched; only the bootstrap here is NativeScript-specific, and it uses public r3f and NativeScript APIs throughout.
 
 ```tsx
-import { runCanvasApp } from '@react-three/nativescript'
+import { runThreeFiberApp } from '@react-three/nativescript'
 
 function Box() {
   return (
@@ -16,7 +16,7 @@ function Box() {
   )
 }
 
-runCanvasApp(
+runThreeFiberApp(
   <>
     <ambientLight intensity={Math.PI / 2} />
     <Box />
@@ -55,12 +55,12 @@ It applies the NativeScript **react flavor** (`.tsx` + JSX), drops the `react-do
 
 ## API
 
-### `runCanvasApp(element, props?)`
+### `runThreeFiberApp(element, props?)`
 
 Boots a single-screen app whose root is a fullscreen r3f canvas (`Frame → Page → GridLayout → Canvas`). `props` are the usual r3f render props (`camera`, `shadows`, `gl`/`renderer`, `scene`, `onCreated`, `onError`) plus a `page` object:
 
 ```ts
-runCanvasApp(<Scene />, {
+runThreeFiberApp(<Scene />, {
   shadows: true,
   camera: { position: [4, 2.5, 8], fov: 35 },
   page: {
@@ -80,7 +80,7 @@ Returns a configured `Page` instead of running the app — use it when the canva
 
 ### `Canvas(view, props)` / `createRoot(view, props)`
 
-The low-level bootstrap. Given a `@nativescript/canvas` `Canvas` (from its `ready` event), returns `{ render, unmount }`. `runCanvasApp` is built on this; reach for it when you build the page/layout yourself.
+The low-level bootstrap. Given a `@nativescript/canvas` `Canvas` (from its `ready` event), returns `{ render, unmount }`. `runThreeFiberApp` is built on this; reach for it when you build the page/layout yourself.
 
 ```tsx
 canvas.on('ready', (args) => {

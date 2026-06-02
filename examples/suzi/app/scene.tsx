@@ -24,7 +24,7 @@ function FitCameraToOrientation() {
 }
 
 // Exact structure from the reference baking-soft-shadows demo the user pasted,
-// adapted for our NativeScript + runCanvasApp setup + ContactShadows (instead of Accumulative).
+// adapted for our NativeScript + runThreeFiberApp setup + ContactShadows (instead of Accumulative).
 // - Same group + Center positioning/rotations/scales for Suzi, sphere, and box.
 // - Same Suzi material (orange + roughness 0).
 // - OrbitControls with the exact polar limits from the reference.

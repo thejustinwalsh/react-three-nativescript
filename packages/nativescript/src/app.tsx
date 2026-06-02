@@ -66,7 +66,7 @@ export function createCanvasPage(element: ReactNode, props: CanvasAppProps = {})
   //   + meshopt .glb files) get our platform-aware decoder instead of the stock one.
   //
   // Doing both here (synchronously, at the very start of page creation) means apps can simply
-  // call runCanvasApp(<Scene/>) or createCanvasPage(...) with zero ceremony. The polyfills
+  // call runThreeFiberApp(<Scene/>) or createCanvasPage(...) with zero ceremony. The polyfills
   // side-effect + global THREE.GLTFLoader interceptor already did a best-effort early attempt
   // at import time; this guarantees the correct post-preload timing right before any React
   // rendering (and thus any GLTF loads) can start.
@@ -144,7 +144,7 @@ export function createCanvasPage(element: ReactNode, props: CanvasAppProps = {})
 
 // Run a single-screen app whose root is a fullscreen r3f canvas page (Frame → Page → Canvas). The
 // Frame is the ContainerView NS sizes to the full screen, so the page lays out edge-to-edge.
-export function runCanvasApp(element: ReactNode, props?: CanvasAppProps): void {
+export function runThreeFiberApp(element: ReactNode, props?: CanvasAppProps): void {
   Application.run({
     create: () => {
       const frame = new Frame()

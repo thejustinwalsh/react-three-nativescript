@@ -2,7 +2,7 @@
 
 ## Project overview
 
-NativeScript + React Three Fiber demo (the "Flatland" project). Renders a 3D scene with the Suzi model, OrbitControls, contact shadows, and an HDR environment — all inside NativeScript's `runCanvasApp`. Entry: `app/app.tsx`.
+NativeScript + React Three Fiber demo (the "Flatland" project). Renders a 3D scene with the Suzi model, OrbitControls, contact shadows, and an HDR environment — all inside NativeScript's `runThreeFiberApp`. Entry: `app/app.tsx`.
 
 ## Commands
 
@@ -31,7 +31,7 @@ No `start`/`serve` script — the CLI is via `ns`.
 
 - **Webpack**: Custom in `webpack.config.js`. It chains `@react-three/nativescript/webpack`, which handles: react flavor, `react-dom` alias drop for drei's missing exports, and converting inline blob-worker URLs to on-disk NS worker files. Do not remove or reorder — breaking this chain breaks loading.
 
-- **`preloadWasmHost()` in app.tsx**: Warms the shared WKWebView wasm host at boot so meshopt decode is fast. Calling it before `runCanvasApp` is required for perf.
+- **`preloadWasmHost()` in app.tsx**: Warms the shared WKWebView wasm host at boot so meshopt decode is fast. Calling it before `runThreeFiberApp` is required for perf.
 
 - **Three.js version pin**: `three@0.183.2`, `@react-three/fiber@10.0.0-alpha.2`, `@react-three/nativescript` from a local `.tgz`. These are tightly coupled — don't upgrade one without checking the others.
 

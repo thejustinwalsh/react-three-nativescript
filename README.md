@@ -52,18 +52,18 @@ NativeScript wants a flat node_modules and uses pnpm as the package manager here
 ## Using the package
 
 ```tsx
-import { runCanvasApp } from '@react-three/nativescript'
+import { runThreeFiberApp } from '@react-three/nativescript'
 import { Scene } from './scene'
 
-runCanvasApp(<Scene />, {
+runThreeFiberApp(<Scene />, {
   camera: { position: [0, 0, 4], fov: 45 },
   page: { backgroundColor: '#15161a' },
 })
 ```
 
-`runCanvasApp` owns the WebGPU renderer setup, the GLTF/decoder polyfills, and the NativeScript page. You write three.js. The surface:
+`runThreeFiberApp` owns the WebGPU renderer setup, the GLTF/decoder polyfills, and the NativeScript page. You write three.js. The surface:
 
-- `runCanvasApp(element, props)` boots a fullscreen canvas app
+- `runThreeFiberApp(element, props)` boots a fullscreen canvas app
 - `createCanvasPage(element, props)` returns a `Page` for multi-screen apps
 - `Canvas(view, props)` / `createRoot(view, props)` are the low-level bootstrap
 - `createWasmWorker`, `preloadWasmHost`, `patchGLTFLoader` are the wasm primitives, used for you by the high-level entries

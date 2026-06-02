@@ -102,7 +102,7 @@ CubeRenderTarget` patch (patch-package) until fixed upstream.
 | File                   | Purpose                                                                                            |
 | ---------------------- | -------------------------------------------------------------------------------------------------- |
 | `src/Canvas.tsx`       | `Canvas`/`createRoot` bootstrap: surface sizing, renderer factory, present, click synth, rotation. |
-| `src/app.tsx`          | `runCanvasApp` / `createCanvasPage` — the fullscreen page stack + page options.                    |
+| `src/app.tsx`          | `runThreeFiberApp` / `createCanvasPage` — the fullscreen page stack + page options.                |
 | `src/events.ts`        | Pointer-event manager: offset population + correct normalization.                                  |
 | `src/index.tsx`        | Re-exports `@react-three/fiber/webgpu`, then the NS bootstrap + helpers.                           |
 | `src/polyfills.ts`     | Imports canvas-polyfill; binds `global.THREE`.                                                     |

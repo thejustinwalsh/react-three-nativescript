@@ -1,9 +1,9 @@
-import { runCanvasApp } from '@react-three/nativescript'
+import { runThreeFiberApp } from '@react-three/nativescript'
 import { Scene } from './scene'
 
 console.log('[FLATLAND APP] app.tsx top-level evaluation started')
-console.log('[FLATLAND APP] About to call runCanvasApp() — preload + GLTF patch are owned by the package')
-runCanvasApp(<Scene />, {
+console.log('[FLATLAND APP] About to call runThreeFiberApp() — preload + GLTF patch are owned by the package')
+runThreeFiberApp(<Scene />, {
   camera: { position: [4, 2.5, 8], fov: 35 },
   page: { backgroundColor: '#daa520' },
   // Native FPS + renderer info overlay (top-left, dev-only, dead-code-eliminated in release).

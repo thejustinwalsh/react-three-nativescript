@@ -20,7 +20,7 @@ export const Application = {
   run() {},
 }
 
-// Minimal stand-ins for the view classes the app helper constructs (createCanvasPage/runCanvasApp).
+// Minimal stand-ins for the view classes the app helper constructs (createCanvasPage/runThreeFiberApp).
 export class Color {
   constructor(public value: string) {}
 }
