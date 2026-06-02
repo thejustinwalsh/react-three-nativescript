@@ -2,7 +2,7 @@
 
 ## Project overview
 
-NativeScript + React Three Fiber demo (the "Flatland" project). Renders a 3D scene with the Suzi model, OrbitControls, contact shadows, and an HDR environment — all inside NativeScript's `runThreeFiberApp`. Entry: `app/app.tsx`.
+NativeScript + React Three Fiber demo (the suzi example). Renders a 3D scene with the Suzi model, OrbitControls, contact shadows, and an HDR environment — all inside NativeScript's `runThreeFiberApp`. Entry: `app/app.tsx`.
 
 ## Commands
 

@@ -1,8 +1,8 @@
 import { runThreeFiberApp } from '@react-three/nativescript'
 import { Scene } from './scene'
 
-console.log('[FLATLAND APP] app.tsx top-level evaluation started')
-console.log('[FLATLAND APP] About to call runThreeFiberApp() — preload + GLTF patch are owned by the package')
+console.log('[SUZI APP] app.tsx top-level evaluation started')
+console.log('[SUZI APP] About to call runThreeFiberApp() — preload + GLTF patch are owned by the package')
 runThreeFiberApp(<Scene />, {
   camera: { position: [4, 2.5, 8], fov: 35 },
   page: { backgroundColor: '#daa520' },
