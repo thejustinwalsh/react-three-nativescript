@@ -51,14 +51,21 @@
     "@babel/core": "^7.24.0",
     "@nativescript/audio-context": "^1.2.2",
     "@nativescript/canvas-polyfill": "^2.0.32",
-    "its-fine": "^2.0.0"
+    "its-fine": "^2.0.0",
+    "react-compiler-webpack": "^1.0.1"
   },
   "peerDependencies": {
     "@nativescript/canvas": ">=2.0.0",
     "@nativescript/core": ">=8.3.5",
     "@react-three/fiber": ">=10.0.0-alpha.0",
+    "babel-plugin-react-compiler": ">=1.0.0",
     "react": ">=19.0 <19.3",
     "three": ">=0.183.2"
+  },
+  "peerDependenciesMeta": {
+    "babel-plugin-react-compiler": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@nativescript/canvas": "^2.0.32",

@@ -24,6 +24,7 @@
     "@nativescript/webpack": "~5.0.25",
     "@types/react": "^19.2.15",
     "@types/three": "^0.181.0",
+    "babel-plugin-react-compiler": "^1.0.0",
     "typescript": "~5.9.2"
   },
   "scripts": {

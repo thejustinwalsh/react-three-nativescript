@@ -31,9 +31,25 @@ const DEFAULT_WORKER_INCLUDE = [
 // substitution to override a resource the heuristic can't resolve, or to swap an inlined source.
 const DEFAULT_SUBSTITUTIONS = []
 
-// Pass options to override defaults, e.g. reactThree(webpack, { exportsPresence: 'error' }).
+// `reactCompiler` opts the app's .tsx into the React Compiler. The compiler is a Babel pass and React's
+// own rule is that it runs FIRST, on the original source, before anything lowers JSX or strips types — it
+// needs source-level info to be sound. NativeScript compiles .tsx with ts-loader (babel only shows up in
+// dev for react-refresh), so we add the compiler as an enforce:'pre' loader: pre-loaders run ahead of the
+// normal `ts` rule, so it sees pristine .tsx, then ts-loader compiles the result. The loader is
+// react-compiler-webpack's `reactCompilerLoader` (parses TS + JSX, runs only babel-plugin-react-compiler,
+// re-emits source with types intact). Scoped to .tsx/.jsx — the two unambiguous JSX extensions. .ts/.js
+// are left out on purpose: with the JSX parser on, a plain-TS generic like `foo<T>()` parses as a JSX
+// tag, so blanket .ts would misparse. Components/JSX live in .tsx here anyway.
+// The app supplies the `babel-plugin-react-compiler` peer; React 19's built-in `react/compiler-runtime`
+// is the `_c` cache. Pass `true`, or an options object forwarded to the compiler plugin.
 module.exports = function applyReactThree(webpack, options = {}) {
-  const { reactFlavor = true, dropReactDomAlias = true, exportsPresence = 'warn', workers = false } = options
+  const {
+    reactFlavor = true,
+    dropReactDomAlias = true,
+    exportsPresence = 'warn',
+    workers = false,
+    reactCompiler = false,
+  } = options
   const workerOpts = workers === true ? {} : workers || {}
   // Merge, don't replace: you always get the defaults (the meshopt inline, the three/@react-three
   // scope) PLUS whatever you add. User entries come last, so a substitution matching the same module
@@ -65,6 +81,24 @@ module.exports = function applyReactThree(webpack, options = {}) {
       const rule = config.module.rule('ns-worker-loader').test(/\.[cm]?js$/)
       for (const inc of workerInclude) rule.include.add(inc)
       rule.use('ns-worker-loader').loader(require.resolve('./ns-worker-loader.cjs')).options({ substitutions })
+    })
+  }
+
+  if (reactCompiler) {
+    // `reactCompilerLoader` is a resolved path string (react-compiler-webpack exports it via
+    // require.resolve), so webpack-chain takes it as the loader directly.
+    const { reactCompilerLoader } = require('react-compiler-webpack')
+    // target '19' = use the built-in react/compiler-runtime. Any object passed as `reactCompiler` is
+    // merged in so callers can set sources/panicThreshold/etc.
+    const compilerOpts = { target: '19', ...(typeof reactCompiler === 'object' ? reactCompiler : {}) }
+    webpack.chainWebpack((config) => {
+      config.module
+        .rule('react-compiler')
+        .enforce('pre')
+        .test(/\.[jt]sx$/)
+        .use('react-compiler')
+        .loader(reactCompilerLoader)
+        .options(compilerOpts)
     })
   }
 }

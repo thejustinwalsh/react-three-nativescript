@@ -6,7 +6,7 @@ import { patchGLTFLoader } from './polyfills'
 import { preloadWasmHost } from './wasm/webview-worker'
 
 import { Application, Color, Frame, GridLayout, Page, Utils, isAndroid } from '@nativescript/core'
-import { Canvas as NativeCanvas, Canvas as NSCanvas } from '@nativescript/canvas'
+import { Canvas as NativeCanvas } from '@nativescript/canvas'
 import { Canvas } from './Canvas'
 import { createStatsOverlay } from './stats'
 

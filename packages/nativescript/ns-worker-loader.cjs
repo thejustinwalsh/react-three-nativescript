@@ -114,7 +114,7 @@ function inlinePlugin(loaderContext, state, inline, baseDir) {
     if (resolved != null) content[key] = resolved
   }
   const keys = Object.keys(content)
-  return function ({ types: t }) {
+  return function () {
     return {
       visitor: {
         StringLiteral(p) {
@@ -176,7 +176,7 @@ const RESOURCE_RE = /^[\w.-]+\.(wasm|js|bin|data)$/i
 function resourcePlugin(loaderContext, baseDir, override) {
   const searchRoot = path.resolve(baseDir, '..') // e.g. examples/jsm, from loaders/
   const seen = new Set()
-  return function ({ types: t }) {
+  return function () {
     return {
       visitor: {
         StringLiteral(p) {

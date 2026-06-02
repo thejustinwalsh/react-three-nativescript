@@ -17,6 +17,10 @@ function FitCameraToOrientation() {
   useLayoutEffect(() => {
     const persp = camera as unknown as { fov?: number; updateProjectionMatrix: () => void }
     if (typeof persp.fov !== 'number') return
+    // react-hooks/immutability treats `camera` as immutable because it's a hook return. It's a three.js
+    // PerspectiveCamera though, an external mutable object r3f hands us by reference, and writing it
+    // inside an effect (not during render) is the idiomatic r3f escape hatch — the compiler leaves it be.
+    // eslint-disable-next-line react-hooks/immutability
     persp.fov = height >= width ? PORTRAIT_FOV : LANDSCAPE_FOV
     persp.updateProjectionMatrix()
   }, [camera, width, height])

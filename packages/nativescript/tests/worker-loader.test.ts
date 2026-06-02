@@ -4,7 +4,6 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 
 // The loader is plain CJS (a webpack loader). Require it directly.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const loader = require('../ns-worker-loader.cjs') as (source: string) => string
 
 // Fake webpack loader context: captures emitFile() assets (name -> content) and warnings. `root`

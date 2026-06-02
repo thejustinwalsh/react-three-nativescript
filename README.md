@@ -14,7 +14,7 @@ react-three-nativescript/
 └── docs/wasm-loader/         the diagrams below
 ```
 
-pnpm workspace, unbuild for the package, vitest for the package tests, prettier for format. Same toolchain react-three-fiber uses, minus the parts that don't apply to one binding.
+pnpm workspace, unbuild for the package, vitest for the package tests, eslint for the rules of react, prettier for format. Same toolchain react-three-fiber uses, minus the parts that don't apply to one binding.
 
 ## Versions
 
@@ -46,6 +46,7 @@ pnpm install
 pnpm build        # build the package (unbuild → dist)
 pnpm test         # package vitest suite
 pnpm typecheck    # package + example + template
+pnpm lint         # rules of react via eslint-plugin-react-hooks, the same checks the compiler runs
 pnpm format       # prettier
 ```
 
@@ -85,10 +86,12 @@ const webpack = require('@nativescript/webpack')
 const reactThree = require('@react-three/nativescript/webpack')
 module.exports = (env) => {
   webpack.init(env)
-  reactThree(webpack, { workers: true })
+  reactThree(webpack, { workers: true, reactCompiler: true })
   return webpack.resolveConfig()
 }
 ```
+
+`reactCompiler: true` turns on the React Compiler for your `.tsx`. NativeScript compiles TypeScript with ts-loader, and React's rule is that the compiler runs first on the source, so the preset adds it as an `enforce: 'pre'` pass (react-compiler-webpack) that hands ts-loader already-compiled components. Install `babel-plugin-react-compiler` in the app, the apps here already do. The `pnpm lint` rules of react are the editor-time half of the same contract: break a rule and the compiler quietly skips that component, so the linter catches it before the build does.
 
 ## How it fits together
 
