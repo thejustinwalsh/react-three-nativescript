@@ -1,13 +1,11 @@
 # Reference release workflow, adapted from react-three-fiber's canary.yml.
 #
-# This repo is a review handoff: @react-three/nativescript is marked "private": true, so it CANNOT
-# publish from here. This workflow therefore builds and PACKS the package (producing the exact
-# tarball that would ship) as a downloadable artifact, and documents the real publish step the
-# react-three-fiber team would run from their own repo. To turn this into a real publisher: drop
-# "private": true from packages/nativescript/package.json and swap the `pack` step for the `publish`
-# step shown in the comment below.
-name: Release (reference, dry — does not publish)
-
+# This is a technical preview: @react-three/nativescript is marked "private": true, so nothing
+# publishes from here yet. The workflow builds and PACKS the package (producing the exact tarball
+# that would ship) as a downloadable artifact. To turn it into a real publisher once the package
+# graduates: drop "private": true from packages/nativescript/package.json and swap the `pack` step
+# for the `publish` step shown in the comment below.
+name: Release
 on:
   workflow_dispatch:
 
@@ -43,12 +41,12 @@ jobs:
       - name: Pack tarball (the artifact that would publish)
         run: pnpm --filter @react-three/nativescript pack --pack-destination .
 
-      # Real publish (react-three-fiber team, from a non-private repo):
+      # Publishing step (commented out for technical preview):
       #   pnpm --filter @react-three/nativescript publish --tag canary --no-git-checks --provenance
       #   env: NODE_AUTH_TOKEN / OIDC
 
       - name: Upload tarball artifact
         uses: actions/upload-artifact@v4
         with:
-          name: react-three-nativescript-tarball
+          name: react-three-nativescript
           path: '*.tgz'
