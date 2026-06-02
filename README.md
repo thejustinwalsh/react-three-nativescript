@@ -18,7 +18,7 @@ pnpm workspace, unbuild for the package, vitest for the package tests, prettier 
 
 ## Versions
 
-Alpha react-three line, pinned exact and bumped in lockstep — the WebGPU surface is still moving.
+Built against the alpha branch react-three-fiber targeting the WebGPURenderer and TSL in three.js
 
 - `@react-three/fiber` `10.0.0-alpha.2`
 - `@react-three/drei` `11.0.0-alpha.5`
