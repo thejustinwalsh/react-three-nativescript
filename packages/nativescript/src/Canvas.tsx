@@ -1,3 +1,4 @@
+import { debug, debugWarn } from './debug'
 import { Application, Screen, isAndroid } from '@nativescript/core'
 import { Component, Suspense } from 'react'
 import { createRoot as createReconciler, unmountComponentAtNode } from '@react-three/fiber/webgpu'
@@ -9,21 +10,23 @@ import type { ReactNode } from 'react'
 import type { Canvas as NativeCanvas } from '@nativescript/canvas'
 import type { RenderProps } from '@react-three/fiber/webgpu'
 
+// The serializable shape forwarded to onError. Deliberately NOT a real Error instance: the raw React
+// error (or the boundary) can carry circular fiber references (_reactInternals etc.) that blow up
+// JSON.stringify on Android when the host logs it. Plain { message, stack } is safe to log.
+export interface SceneError {
+  message: string
+  stack?: string
+}
+
 // A minimal error boundary so a throwing scene reaches `onError` instead of crashing the host app,
 // without depending on r3f's internal ErrorBoundary utility.
-class ErrorBoundary extends Component<{ set: (error: Error) => void; children?: ReactNode }, { error: boolean }> {
+class ErrorBoundary extends Component<{ set: (error: SceneError) => void; children?: ReactNode }, { error: boolean }> {
   state = { error: false }
   static getDerivedStateFromError() {
     return { error: true }
   }
   componentDidCatch(error: Error) {
-    // Forward a plain serializable object. Passing the raw React error (or the boundary instance
-    // itself) can contain circular fiber references (_reactInternals etc.) which blow up
-    // JSON.stringify on Android when the host app does console.error or logging.
-    this.props.set({
-      message: error?.message ?? String(error),
-      stack: error?.stack,
-    } as any)
+    this.props.set({ message: error?.message ?? String(error), stack: error?.stack })
   }
   render() {
     return this.state.error ? null : this.props.children
@@ -33,8 +36,8 @@ class ErrorBoundary extends Component<{ set: (error: Error) => void; children?: 
 export interface CanvasProps extends Omit<RenderProps<HTMLCanvasElement>, 'size' | 'dpr'> {
   /** Rendered while the scene suspends. A three element or null. */
   fallback?: ReactNode
-  /** Called when the scene tree throws, instead of crashing the host app. */
-  onError?: (error: Error) => void
+  /** Called when the scene tree (or renderer setup) fails, instead of crashing the host app. */
+  onError?: (error: SceneError) => void
   /** @internal Per-present hook (the stats overlay sampler). Set by createCanvasPage; not for app code. */
   onPresent?: (renderer: object) => void
 }
@@ -58,6 +61,18 @@ const CLICK_SLOP = 10
 // width/height, so they must be set on the live view. This mirrors @nativescript/canvas-three.
 export function Canvas(view: NativeCanvas, props: CanvasProps = {}): Root {
   const { fallback = null, onError, onPresent, ...renderProps } = props
+
+  // Single failure path for both scene throws (via the ErrorBoundary) and async setup/render
+  // rejections. Forwards a serializable SceneError; if the host gave no onError, surface it on the
+  // console so a renderer-setup failure can't silently leave a blank screen.
+  const fail = (err: unknown) => {
+    const e: SceneError = {
+      message: (err as { message?: string })?.message ?? String(err),
+      stack: (err as { stack?: string })?.stack,
+    }
+    if (onError) onError(e)
+    else console.error('[R3FNS] scene/renderer failure:', e.message, e.stack ?? '')
+  }
 
   const screen = Screen.mainScreen
   const dpr = screen.scale
@@ -94,8 +109,8 @@ export function Canvas(view: NativeCanvas, props: CanvasProps = {}): Root {
   let webgpuDevice: any
   let webgpuContext: any
 
-  console.log(
-    '[NS-R3F] Canvas created – isAndroid (from @nativescript/core):',
+  debug(
+    '[R3FNS] Canvas created – isAndroid (from @nativescript/core):',
     isAndroid,
     'navigator.gpu exists:',
     typeof navigator !== 'undefined' && !!(navigator as any).gpu,
@@ -107,20 +122,20 @@ export function Canvas(view: NativeCanvas, props: CanvasProps = {}): Root {
   const webgpuSetup =
     typeof navigator !== 'undefined' && (navigator as any).gpu
       ? (async () => {
-          console.log('[NS-R3F] navigator.gpu present – starting requestAdapter...')
+          debug('[R3FNS] navigator.gpu present – starting requestAdapter...')
           try {
             const gpu = (navigator as any).gpu
             const adapter = await gpu.requestAdapter()
-            console.log('[NS-R3F] requestAdapter result:', !!adapter)
+            debug('[R3FNS] requestAdapter result:', !!adapter)
             if (adapter) {
               webgpuDevice = await adapter.requestDevice()
               webgpuContext = view.getContext('webgpu')
-              console.log('[NS-R3F] WebGPU device + context acquired successfully')
+              debug('[R3FNS] WebGPU device + context acquired successfully')
             } else {
-              console.warn('[NS-R3F] navigator.gpu.requestAdapter returned null')
+              debugWarn('[R3FNS] navigator.gpu.requestAdapter returned null')
             }
           } catch (err) {
-            console.warn('[NS-R3F] WebGPU pre-init failed:', err)
+            debugWarn('[R3FNS] WebGPU pre-init failed:', err)
           }
         })()
       : Promise.resolve()
@@ -151,9 +166,9 @@ export function Canvas(view: NativeCanvas, props: CanvasProps = {}): Root {
     // On Android we pass pre-acquired WebGPU resources when available.
     // This is the equivalent of the manual setup in the working canvas demos.
     const hasWebGPUResources = !!(webgpuContext && webgpuDevice)
-    console.log('[NS-R3F] createRenderer – hasWebGPUResources:', hasWebGPUResources)
+    debug('[R3FNS] createRenderer – hasWebGPUResources:', hasWebGPUResources)
     if (hasWebGPUResources) {
-      console.log('[NS-R3F] Passing WebGPU device + context to WebGPURenderer')
+      debug('[R3FNS] Passing WebGPU device + context to WebGPURenderer')
     }
     const renderer = new WebGPURenderer({
       ...rendererProps,
@@ -182,8 +197,8 @@ export function Canvas(view: NativeCanvas, props: CanvasProps = {}): Root {
         const render = state.renderer.render.bind(state.renderer)
         const getTarget = (state.renderer as { getRenderTarget?: () => unknown }).getRenderTarget
         const backend = 'backend' in state.renderer ? (state.renderer as any).backend : null
-        console.log(
-          '[NS-R3F] onCreated - final backend:',
+        debug(
+          '[R3FNS] onCreated - final backend:',
           backend?.constructor?.name,
           'isWebGPUBackend:',
           backend?.isWebGPUBackend,
@@ -250,8 +265,12 @@ export function Canvas(view: NativeCanvas, props: CanvasProps = {}): Root {
   // dimensions that swap with orientation, never the surface-perturbed clientWidth. Because the
   // renderer factory keeps r3f off the layout style, setting the surface here can't shrink the view.
   // We defer a tick so the screen reports the rotated dimensions. setSize updates camera.aspect.
+  let disposed = false
+  let rotateTimer: ReturnType<typeof setTimeout> | undefined
   const onOrientation = () => {
-    setTimeout(() => {
+    rotateTimer = setTimeout(() => {
+      // A rotation can fire just before unmount; the deferred body must not write to a torn-down view.
+      if (disposed) return
       const w = screen.widthDIPs
       const h = screen.heightDIPs
       if (!w || !h) return
@@ -264,15 +283,21 @@ export function Canvas(view: NativeCanvas, props: CanvasProps = {}): Root {
 
   return {
     render(element) {
-      ready.then(() =>
-        root.render(
-          <ErrorBoundary set={(error) => onError?.(error)}>
-            <Suspense fallback={fallback}>{element}</Suspense>
-          </ErrorBoundary>,
-        ),
-      )
+      // Route renderer-setup (webgpuSetup/configure) and initial-render rejections to the same
+      // failure path as scene throws, so a setup failure surfaces instead of hanging silently.
+      ready
+        .then(() =>
+          root.render(
+            <ErrorBoundary set={fail}>
+              <Suspense fallback={fallback}>{element}</Suspense>
+            </ErrorBoundary>,
+          ),
+        )
+        .catch(fail)
     },
     unmount() {
+      disposed = true
+      if (rotateTimer !== undefined) clearTimeout(rotateTimer)
       Application.off(Application.orientationChangedEvent, onOrientation)
       view.removeEventListener('pointerdown', onPointerDown)
       view.removeEventListener('pointerup', onPointerUp)
@@ -292,30 +317,22 @@ export const createRoot = Canvas
 // - WebGL fallback  → context.finish() + flush() + commit() (required on NS Android canvas)
 function createPresent(view: NativeCanvas, renderer: object): () => void {
   const backend = (renderer as { backend?: { isWebGPUBackend?: boolean } }).backend
-  console.log(
-    '[NS-R3F] createPresent – backend:',
-    backend?.constructor?.name,
-    'isWebGPUBackend:',
-    backend?.isWebGPUBackend,
-  )
+  debug('[R3FNS] createPresent – backend:', backend?.constructor?.name, 'isWebGPUBackend:', backend?.isWebGPUBackend)
 
   if (backend?.isWebGPUBackend) {
     const context = view.getContext('webgpu')
-    console.log('[NS-R3F] WebGPU backend detected – context has presentSurface:', !!context?.presentSurface)
+    debug('[R3FNS] WebGPU backend detected – context has presentSurface:', !!context?.presentSurface)
     if (context?.presentSurface) return () => context.presentSurface()
   }
 
   const context = view.getContext('webgl2')
   if (context) {
-    console.log('[NS-R3F] Falling back to WebGL2 present logic')
+    debug('[R3FNS] Falling back to WebGL2 present logic')
     // Reliable present for Android WebGL fallback.
     return () => {
       try {
         if (typeof context.finish === 'function') context.finish()
-        if (typeof context.flush === 'function') {
-          context.flush()
-          context.flush()
-        }
+        if (typeof context.flush === 'function') context.flush()
         if (typeof context.commit === 'function') context.commit()
       } catch {
         // Some contexts don't support flush/commit; ignore errors.

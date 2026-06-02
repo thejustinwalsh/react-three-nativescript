@@ -1,5 +1,6 @@
 // Explicit side-effect dependency: the early Android bootstrap + canvas polyfill
 // must run before any Canvas or three.js code. Importing this module guarantees it.
+import { debug } from './debug'
 import './polyfills'
 import { patchGLTFLoader } from './polyfills'
 import { preloadWasmHost } from './wasm/webview-worker'
@@ -70,7 +71,7 @@ export function createCanvasPage(element: ReactNode, props: CanvasAppProps = {})
   // side-effect + global THREE.GLTFLoader interceptor already did a best-effort early attempt
   // at import time; this guarantees the correct post-preload timing right before any React
   // rendering (and thus any GLTF loads) can start.
-  console.log('[NS-R3F] createCanvasPage: auto-calling preloadWasmHost() + patchGLTFLoader()')
+  debug('[R3FNS] createCanvasPage: auto-calling preloadWasmHost() + patchGLTFLoader()')
   preloadWasmHost()
   patchGLTFLoader()
 

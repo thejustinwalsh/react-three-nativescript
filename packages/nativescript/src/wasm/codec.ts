@@ -39,20 +39,21 @@ export function manualToBase64(bytes: Uint8Array): string {
 }
 
 export function manualFromBase64(b64: string): Uint8Array {
-  const len = b64.length
+  // Significant length excludes any trailing '=' padding. Deriving the byte count from this (rather
+  // than assuming the input is a multiple of 4) makes the decoder correct for UNPADDED base64 too —
+  // a trailing partial group of 2 chars is 1 byte, 3 chars is 2 bytes.
+  let len = b64.length
+  while (len > 0 && b64.charCodeAt(len - 1) === 61) len--
   if (len === 0) return new Uint8Array(0)
-  let pad = 0
-  if (b64.charCodeAt(len - 1) === 61) pad++
-  if (b64.charCodeAt(len - 2) === 61) pad++
-  const outLen = (len >> 2) * 3 - pad
+  const outLen = Math.floor((len * 3) / 4)
   const out = new Uint8Array(outLen)
   let p = 0
   for (let i = 0; i < len; i += 4) {
     const n =
       (B64_LOOKUP[b64.charCodeAt(i)] << 18) |
       (B64_LOOKUP[b64.charCodeAt(i + 1)] << 12) |
-      (B64_LOOKUP[b64.charCodeAt(i + 2)] << 6) |
-      B64_LOOKUP[b64.charCodeAt(i + 3)]
+      ((i + 2 < len ? B64_LOOKUP[b64.charCodeAt(i + 2)] : 0) << 6) |
+      (i + 3 < len ? B64_LOOKUP[b64.charCodeAt(i + 3)] : 0)
     if (p < outLen) out[p++] = (n >> 16) & 255
     if (p < outLen) out[p++] = (n >> 8) & 255
     if (p < outLen) out[p++] = n & 255

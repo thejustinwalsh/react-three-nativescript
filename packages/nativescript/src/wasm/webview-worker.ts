@@ -18,6 +18,7 @@
 // On Android (and anywhere the app V8 has wasm) there's no bridge to justify: `createWasmWorker`
 // returns a real native `Worker`.
 
+import { debug } from '../debug'
 import { Utils } from '@nativescript/core'
 import { BUFFER_TAG, encode, decode } from './codec'
 import { registerBinScheme, binURL, type BinRegistry } from './bin-channel'
@@ -94,13 +95,13 @@ function hostBootstrapHTML(): string {
         return __dec(parsed).then(function(msg){
           if(msg.type==='spawn'){
             var url=URL.createObjectURL(new Blob([msg.source],{type:'text/javascript'}));
-            var w=new Worker(url);__workers[msg.ch]=w;
+            var w=new Worker(url);__workers[msg.ch]=w;URL.revokeObjectURL(url);
             (function(ch){
               w.onmessage=function(e){__hostSend({type:'message',ch:ch,data:e.data});};
               w.onerror=function(e){__report((e&&(e.message||e.filename))||'inner worker error',ch);};
             })(msg.ch);
           }else if(msg.type==='post'){
-            var pw=__workers[msg.ch];if(pw){var t=[];__xfer(msg.data,t);pw.postMessage(msg.data,t);}
+            var pw=__workers[msg.ch];if(pw){var t=[];__xfer(msg.data,t);var tu=t.filter(function(b,i){return t.indexOf(b)===i});pw.postMessage(msg.data,tu);}
           }else if(msg.type==='terminate'){
             var tw=__workers[msg.ch];if(tw){try{tw.terminate();}catch(e){}delete __workers[msg.ch];}
           }
@@ -197,7 +198,7 @@ class WebViewWorkerHost {
             this.channels.get(parsed.ch)!.onerror?.({ message: text })
           // Page-level (no channel): a caps report or a page error. LOG only — never reject channels.
           // An info report or an unrelated page error must not kill in-flight decodes.
-          else console.log(text)
+          else debug(text)
         },
       },
       { protocols: [(global as any).WKScriptMessageHandler] },
@@ -367,17 +368,17 @@ class WebViewWorkerHost {
 // creation + page-load latency. No-op where there's no host (Android, anywhere with app-V8 wasm).
 // Call once at app start, e.g. in your entry module. Safe to call repeatedly.
 export function preloadWasmHost(): void {
-  const tag = '[NS-R3F WASM-HOST]'
-  console.log(`${tag} preloadWasmHost() called`)
+  const tag = '[R3FNS WASM-HOST]'
+  debug(`${tag} preloadWasmHost() called`)
   const isIOSPlatform =
     !!(global as any).__APPLE__ || (typeof Utils !== 'undefined' && (Utils as any).ios !== undefined)
   const hasWebAssembly = typeof (global as any).WebAssembly !== 'undefined'
-  console.log(`${tag} isIOSPlatform=${isIOSPlatform}, hasWebAssembly=${hasWebAssembly}`)
+  debug(`${tag} isIOSPlatform=${isIOSPlatform}, hasWebAssembly=${hasWebAssembly}`)
   if (isIOSPlatform && !hasWebAssembly) {
-    console.log(`${tag} → Actually creating WKWebView host now (iOS without native wasm)`)
+    debug(`${tag} → Actually creating WKWebView host now (iOS without native wasm)`)
     WebViewWorkerHost.shared()
   } else {
-    console.log(`${tag} → No-op (Android or V8 has WebAssembly)`)
+    debug(`${tag} → No-op (Android or V8 has WebAssembly)`)
   }
 }
 
@@ -392,16 +393,16 @@ export function verifyBinChannel(): Promise<{ ok: boolean; detail: string }> {
 // Worker elsewhere (Android/anywhere WebAssembly exists). `source` is the worker script (e.g. with
 // an inlined decoder, as produced by ns-worker-loader).
 export function createWasmWorker(source: string): WorkerLike {
-  const tag = '[NS-R3F WASM-WORKER]'
+  const tag = '[R3FNS WASM-WORKER]'
   const isIOSPlatform =
     !!(global as any).__APPLE__ || (typeof Utils !== 'undefined' && (Utils as any).ios !== undefined)
   const hasWebAssembly = typeof (global as any).WebAssembly !== 'undefined'
-  console.log(`${tag} createWasmWorker() called, source length=${source?.length || 0}`)
+  debug(`${tag} createWasmWorker() called, source length=${source?.length || 0}`)
   if (isIOSPlatform && !hasWebAssembly) {
-    console.log(`${tag} → Using WKWebView bridged worker host`)
+    debug(`${tag} → Using WKWebView bridged worker host`)
     return WebViewWorkerHost.shared().spawn(source)
   }
-  console.log(`${tag} → Creating real native Worker (Android path)`)
+  debug(`${tag} → Creating real native Worker (Android path)`)
   const url = (global as any).URL?.createObjectURL?.(new (global as any).Blob([source], { type: 'text/javascript' }))
   return new (global as any).Worker(url) as WorkerLike
 }

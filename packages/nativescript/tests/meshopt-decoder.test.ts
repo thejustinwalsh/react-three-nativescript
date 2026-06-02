@@ -28,10 +28,35 @@ vi.mock('../src/wasm/webview-worker', () => ({
   },
 }))
 
-import { createBridgedDecoder } from '../src/wasm/meshopt-decoder'
+import { createBridgedDecoder, getMeshoptDecoder } from '../src/wasm/meshopt-decoder'
 
 beforeEach(() => {
   h.workers.length = 0
+})
+
+describe('getMeshoptDecoder selector', () => {
+  it('returns a memoized bridged decoder when WebAssembly is absent (iOS)', () => {
+    const saved = (globalThis as any).WebAssembly
+    try {
+      delete (globalThis as any).WebAssembly
+      const a = getMeshoptDecoder()
+      const b = getMeshoptDecoder()
+      expect(a).toBe(b) // memoized singleton, not a fresh decoder per call
+      expect(a.supported).toBe(true)
+      // it's the bridged decoder: a decode lazily spins up a (faked) worker
+      a.decodeGltfBufferAsync(1, 4, new Uint8Array([1]), 'ATTRIBUTES', 'NONE')
+      expect(h.workers.length).toBe(1)
+    } finally {
+      ;(globalThis as any).WebAssembly = saved
+    }
+  })
+
+  it('returns the stock decoder (no bridge worker) when WebAssembly is present', () => {
+    expect(typeof (globalThis as any).WebAssembly).not.toBe('undefined')
+    const dec = getMeshoptDecoder()
+    dec.decodeGltfBufferAsync(1, 4, new Uint8Array([1]), 'ATTRIBUTES', 'NONE').catch(() => {})
+    expect(h.workers.length).toBe(0) // stock path never touches createWasmWorker
+  })
 })
 
 describe('bridged meshopt decoder', () => {
@@ -102,5 +127,18 @@ describe('bridged meshopt decoder', () => {
     h.workers[0].fail('inner worker crashed')
     await expect(p1).rejects.toThrow(/inner worker crashed/)
     await expect(p2).rejects.toThrow(/inner worker crashed/)
+  })
+
+  it('rejects a decode that never gets a reply, after the timeout', async () => {
+    vi.useFakeTimers()
+    try {
+      const dec = createBridgedDecoder()
+      const p = dec.decodeGltfBufferAsync(1, 1, new Uint8Array([1]), 'ATTRIBUTES', 'NONE')
+      const settled = expect(p).rejects.toThrow(/timed out/)
+      await vi.advanceTimersByTimeAsync(30_000)
+      await settled
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

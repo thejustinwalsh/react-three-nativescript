@@ -16,15 +16,27 @@
 // This module is the native -> WebView half: a one-shot registry of buffers the page can fetch.
 // The registry is unit-tested; the native handler is device-verified (meshopt decode rides it).
 
+import { debug } from '../debug'
 export const BIN_SCHEME = 'nsbin'
 
 // One-shot store: a buffer is freed the moment the WebView fetches it, so a decode's input doesn't
-// linger in native memory after it's been pulled across.
+// linger in native memory after it's been pulled across. The "freed on fetch" contract only holds on
+// the happy path; CAP bounds the worst case (a fetch that never lands) by evicting the oldest entry
+// so an un-fetched buffer can't pin memory indefinitely.
+const CAP = 64
+
 export class BinRegistry {
   private store = new Map<string, Uint8Array>()
   private seq = 0
 
   put(bytes: Uint8Array): string {
+    if (this.store.size >= CAP) {
+      const oldest = this.store.keys().next().value
+      if (oldest !== undefined) {
+        this.store.delete(oldest)
+        debug('[R3FNS] BinRegistry over cap, evicting un-fetched key', oldest)
+      }
+    }
     const key = String(++this.seq)
     this.store.set(key, bytes)
     return key
@@ -94,7 +106,7 @@ export function registerBinScheme(config: unknown, g: Record<string, any> = glob
           task.didReceiveData(data)
           task.didFinish()
         } catch (err) {
-          console.log('[nsbin] handler error:', url, String((err as Error)?.message ?? err))
+          debug('[nsbin] handler error:', url, String((err as Error)?.message ?? err))
           if (task && task.didFailWithError && g.NSError) {
             task.didFailWithError(g.NSError.errorWithDomainCodeUserInfo('nsbin', 1, null))
           }

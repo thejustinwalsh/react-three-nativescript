@@ -10,6 +10,7 @@
 // On Android (and anywhere the app V8 has wasm) there's no bridge to justify — the stock decoder
 // works directly, so `getMeshoptDecoder` hands that back instead.
 
+import { debug } from '../debug'
 import { createWasmWorker, type WorkerLike } from './webview-worker'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 
@@ -65,6 +66,10 @@ export interface MeshoptDecoderLike {
 
 type Pending = { resolve: (v: Uint8Array) => void; reject: (e: Error) => void }
 
+// A decode that never gets a reply (worker wedged, bridge stalled) would hang GLTFLoader and the
+// Suspense boundary forever. Reject it after this long so the failure reaches the loader instead.
+const DECODE_TIMEOUT_MS = 30_000
+
 export function createBridgedDecoder(): MeshoptDecoderLike {
   let worker: WorkerLike | null = null
   const pending = new Map<number, Pending>()
@@ -99,7 +104,19 @@ export function createBridgedDecoder(): MeshoptDecoderLike {
       const w = ensureWorker()
       return new Promise<Uint8Array>((resolve, reject) => {
         const id = ++nextId
-        pending.set(id, { resolve, reject })
+        const timer = setTimeout(() => {
+          if (pending.delete(id)) reject(new Error(`meshopt: decode timed out after ${DECODE_TIMEOUT_MS}ms`))
+        }, DECODE_TIMEOUT_MS)
+        pending.set(id, {
+          resolve: (v) => {
+            clearTimeout(timer)
+            resolve(v)
+          },
+          reject: (e) => {
+            clearTimeout(timer)
+            reject(e)
+          },
+        })
         // GLTFLoader hands a subarray view into the GLB buffer; copy to a tight buffer so only these
         // bytes cross the bridge (and the encoder ships exactly them).
         const src = source.slice()
@@ -114,18 +131,18 @@ let bridged: MeshoptDecoderLike | null = null
 // The decoder to hand `loader.setMeshoptDecoder(...)`. Stock module when the app V8 has wasm
 // (Android), the WKWebView-bridged decoder when it doesn't (iOS).
 export function getMeshoptDecoder(): MeshoptDecoderLike {
-  const tag = '[NS-R3F MESHOPT]'
+  const tag = '[R3FNS MESHOPT]'
   const hasWebAssembly = typeof (globalThis as { WebAssembly?: unknown }).WebAssembly !== 'undefined'
   const stockSupported = !!(MeshoptDecoder as MeshoptDecoderLike).supported
-  console.log(`${tag} getMeshoptDecoder() called - hasWebAssembly=${hasWebAssembly}, stockSupported=${stockSupported}`)
+  debug(`${tag} getMeshoptDecoder() called - hasWebAssembly=${hasWebAssembly}, stockSupported=${stockSupported}`)
 
   if (hasWebAssembly && stockSupported) {
-    console.log(`${tag} → Using STOCK MeshoptDecoder (Android path or V8 with wasm)`)
+    debug(`${tag} → Using STOCK MeshoptDecoder (Android path or V8 with wasm)`)
     return MeshoptDecoder as unknown as MeshoptDecoderLike
   }
-  console.log(`${tag} → Falling back to BRIDGED (WKWebView) decoder`)
+  debug(`${tag} → Falling back to BRIDGED (WKWebView) decoder`)
   if (!bridged) {
-    console.log(`${tag} Creating bridged decoder for the first time`)
+    debug(`${tag} Creating bridged decoder for the first time`)
     bridged = createBridgedDecoder()
   }
   return bridged

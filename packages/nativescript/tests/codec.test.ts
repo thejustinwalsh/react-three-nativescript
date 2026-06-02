@@ -36,6 +36,18 @@ describe('codec base64', () => {
     }
   })
 
+  it('decodes UNPADDED base64 the same as padded', () => {
+    // The bridge always pads, but the decoder must not silently return [] for unpadded input
+    // (the old (len>>2)*3 formula did). 2-char tail -> 1 byte, 3-char tail -> 2 bytes.
+    expect(Array.from(manualFromBase64('AQI'))).toEqual([1, 2])
+    expect(Array.from(manualFromBase64('AQ'))).toEqual([1])
+    expect(Array.from(manualFromBase64('AQI='))).toEqual([1, 2])
+    expect(Array.from(manualFromBase64('AQ=='))).toEqual([1])
+    const bytes = new Uint8Array([10, 20, 30, 40, 50])
+    const stripped = manualToBase64(bytes).replace(/=+$/, '')
+    expect(Array.from(manualFromBase64(stripped))).toEqual(Array.from(bytes))
+  })
+
   it('manual round-trips a large random buffer', () => {
     const big = new Uint8Array(200_000)
     for (let i = 0; i < big.length; i++) big[i] = (i * 31 + 7) & 255
