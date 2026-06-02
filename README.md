@@ -1,7 +1,6 @@
 # react-three-nativescript
-
-[@react-three/fiber](https://github.com/pmndrs/react-three-fiber) on Mobile with NativeScript.  
-Declaritive three.js with the react-three-fiber reconciler running on NativeScript Canvas.
+ 
+Declaritive three.js with the [@react-three/fiber](https://github.com/pmndrs/react-three-fiber) reconciler running on mobile using NativeScript Canvas.
 
 This is a technical preview, meant to be iterated on and eventually folded into the broader react-three and NativeScript ecosystems. The package is marked `private: true`, so nothing publishes from here yet. It runs against the published `@react-three/fiber` alpha and ships a working demo plus a starter template, with the build and release wiring laid out in one place so it's easy to pick apart.
 
