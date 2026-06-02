@@ -1,0 +1,12 @@
+node_modules
+dist
+platforms
+hooks
+pnpm-lock.yaml
+patches
+docs/wasm-loader
+App_Resources
+**/app/assets
+*.glb
+*.hdr
+*.patch

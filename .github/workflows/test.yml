@@ -1,0 +1,41 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request: {}
+
+jobs:
+  build:
+    name: Build, typecheck, test, format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build package
+        run: pnpm build
+
+      - name: Typecheck (package, example, template)
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Check formatting
+        run: pnpm format:check

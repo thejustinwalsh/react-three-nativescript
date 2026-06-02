@@ -1,0 +1,15 @@
+node_modules/
+dist/
+
+# NativeScript build output / generated
+platforms/
+hooks/
+.nsbuildinfo
+report/
+
+# misc
+*.tgz
+*.log
+.DS_Store
+.vscode/
+.idea/

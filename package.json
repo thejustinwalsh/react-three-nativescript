@@ -1,0 +1,32 @@
+{
+  "name": "react-three-nativescript",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Standalone repo for @react-three/nativescript — NativeScript bindings for @react-three/fiber, with a demo example and a starter template.",
+  "license": "MIT",
+  "packageManager": "pnpm@10.28.2",
+  "scripts": {
+    "build": "pnpm --filter @react-three/nativescript build",
+    "stub": "pnpm --filter @react-three/nativescript stub",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1",
+    "prettier": "^3.8.0",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.17"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nativescript/core",
+      "@parcel/watcher",
+      "esbuild"
+    ],
+    "patchedDependencies": {
+      "@react-three/drei@11.0.0-alpha.5": "patches/@react-three__drei@11.0.0-alpha.5.patch"
+    }
+  }
+}

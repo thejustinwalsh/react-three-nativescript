@@ -1,0 +1,75 @@
+{
+  "name": "@react-three/nativescript",
+  "version": "10.0.0-alpha.2",
+  "description": "NativeScript bindings for @react-three/fiber",
+  "private": true,
+  "keywords": [
+    "react",
+    "nativescript",
+    "react-nativescript",
+    "three",
+    "threejs",
+    "fiber"
+  ],
+  "author": "Paul Henschel (https://github.com/drcmda)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pmndrs/react-three-fiber/issues"
+  },
+  "homepage": "https://github.com/pmndrs/react-three-fiber#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pmndrs/react-three-fiber.git"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "**/polyfills.*",
+    "**/index.*"
+  ],
+  "files": [
+    "dist",
+    "webpack.cjs",
+    "ns-worker-loader.cjs",
+    "readme.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./webpack": "./webpack.cjs"
+  },
+  "scripts": {
+    "build": "unbuild",
+    "stub": "unbuild --stub",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@babel/core": "^7.24.0",
+    "@nativescript/audio-context": "^1.2.2",
+    "@nativescript/canvas-polyfill": "^2.0.32",
+    "its-fine": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@nativescript/canvas": ">=2.0.0",
+    "@nativescript/core": ">=8.3.5",
+    "@react-three/fiber": ">=10.0.0-alpha.0",
+    "react": ">=19.0 <19.3",
+    "three": ">=0.183.2"
+  },
+  "devDependencies": {
+    "@nativescript/canvas": "^2.0.32",
+    "@nativescript/core": "~9.0.0",
+    "@react-three/fiber": "10.0.0-alpha.2",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.2.15",
+    "@types/three": "^0.181.0",
+    "react": "^19.2.0",
+    "three": "0.183.2",
+    "typescript": "~5.9.2",
+    "unbuild": "^3.6.1"
+  }
+}

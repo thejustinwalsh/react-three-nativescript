@@ -1,0 +1,39 @@
+diff --git a/package.json b/package.json
+index d27ed3614ee0ef812b0d6050753aaf9203e05095..88c5f1a9d6282d043109a6cbdcf70b17d8199c40 100644
+--- a/package.json
++++ b/package.json
+@@ -32,6 +32,7 @@
+   "react-native": "native/index.mjs",
+   "sideEffects": false,
+   "exports": {
++    "./package.json": "./package.json",
+     ".": {
+       "types": "./index.d.ts",
+       "import": "./index.mjs"
+diff --git a/webgpu/index.mjs b/webgpu/index.mjs
+index 265237b344dcfbec0670881af532f2e8af6730ea..5edd914bc4a9f9d2b753b1626036611231ab8f32 100644
+--- a/webgpu/index.mjs
++++ b/webgpu/index.mjs
+@@ -2,7 +2,7 @@ import * as React from 'react';
+ import { forwardRef, useImperativeHandle, useMemo, useEffect, useCallback, useRef, useLayoutEffect, useState, Fragment, createContext, useContext } from 'react';
+ import { useThree, useFrame, extend, createPortal, applyProps, useInstanceHandle, context as context$a, useLoader, addEffect, addAfterEffect } from '@react-three/fiber';
+ import * as THREE from 'three/webgpu';
+-import { MeshBasicNodeMaterial, RenderTarget, MeshNormalNodeMaterial, QuadMesh, MeshPhysicalNodeMaterial, Frustum, Matrix4, Line2NodeMaterial, Vector3, Vector4, Vector2, Color, InstancedInterleavedBuffer, InterleavedBufferAttribute, Object3D, WebGLCubeRenderTarget, HalfFloatType, CubeCamera as CubeCamera$1, EventDispatcher, Euler, Quaternion, MathUtils, TextureLoader, Texture as Texture$1, MeshLambertMaterial, DynamicDrawUsage, CatmullRomCurve3, CubicBezierCurve3, QuadraticBezierCurve3, Shape as Shape$1, CanvasTexture, DoubleSide, PerspectiveCamera as PerspectiveCamera$1, OrthographicCamera as OrthographicCamera$1, REVISION, AudioListener, AudioLoader, AnimationMixer, BufferAttribute, Box3, Sphere as Sphere$1, InstancedBufferAttribute, DepthTexture, DepthFormat, UnsignedShortType, CubeTextureLoader, DefaultLoadingManager, Ray, Raycaster, Camera, CubeReflectionMapping, EquirectangularReflectionMapping, Scene, RepeatWrapping, SpriteNodeMaterial, AdditiveBlending, CylinderGeometry } from 'three/webgpu';
++import { MeshBasicNodeMaterial, RenderTarget, MeshNormalNodeMaterial, QuadMesh, MeshPhysicalNodeMaterial, Frustum, Matrix4, Line2NodeMaterial, Vector3, Vector4, Vector2, Color, InstancedInterleavedBuffer, InterleavedBufferAttribute, Object3D, CubeRenderTarget as WebGLCubeRenderTarget, HalfFloatType, CubeCamera as CubeCamera$1, EventDispatcher, Euler, Quaternion, MathUtils, TextureLoader, Texture as Texture$1, MeshLambertMaterial, DynamicDrawUsage, CatmullRomCurve3, CubicBezierCurve3, QuadraticBezierCurve3, Shape as Shape$1, CanvasTexture, DoubleSide, PerspectiveCamera as PerspectiveCamera$1, OrthographicCamera as OrthographicCamera$1, REVISION, AudioListener, AudioLoader, AnimationMixer, BufferAttribute, Box3, Sphere as Sphere$1, InstancedBufferAttribute, DepthTexture, DepthFormat, UnsignedShortType, CubeTextureLoader, DefaultLoadingManager, Ray, Raycaster, Camera, CubeReflectionMapping, EquirectangularReflectionMapping, Scene, RepeatWrapping, SpriteNodeMaterial, AdditiveBlending, CylinderGeometry } from 'three/webgpu';
+ import { ArcballControls as ArcballControls$1 } from 'three/examples/jsm/controls/ArcballControls.js';
+ import { useGesture } from '@use-gesture/react';
+ import { FirstPersonControls as FirstPersonControls$1 } from 'three/examples/jsm/controls/FirstPersonControls.js';
+@@ -2610,11 +2610,11 @@ const RenderCubeTexture = /* @__PURE__ */ React.forwardRef(
+         depthBuffer,
+         generateMipmaps
+       };
+-      const fboA2 = new THREE.WebGLCubeRenderTarget(fboSize, settings);
++      const fboA2 = new THREE.CubeRenderTarget(fboSize, settings);
+       fboA2.texture.isRenderTargetTexture = !flip;
+       fboA2.texture.flipY = true;
+       fboA2.texture.type = THREE.HalfFloatType;
+-      const fboB2 = new THREE.WebGLCubeRenderTarget(fboSize, settings);
++      const fboB2 = new THREE.CubeRenderTarget(fboSize, settings);
+       fboB2.texture.isRenderTargetTexture = !flip;
+       fboB2.texture.flipY = true;
+       fboB2.texture.type = THREE.HalfFloatType;
