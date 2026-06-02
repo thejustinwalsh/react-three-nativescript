@@ -72,7 +72,7 @@ runThreeFiberApp(<Scene />, {
 })
 ```
 
-`runThreeFiberApp` owns the WebGPU renderer setup, the GLTF/decoder polyfills, and the NativeScript page. You write three.js. The surface:
+`runThreeFiberApp` owns the WebGPU renderer setup, the GLTF/decoder polyfills, and the NativeScript page. You write react-three-fiber components. The surface:
 
 - `runThreeFiberApp(element, props)` boots a fullscreen canvas app
 - `createCanvasPage(element, props)` returns a `Page` for multi-screen apps
