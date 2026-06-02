@@ -2,7 +2,7 @@
 
 NativeScript bindings for [@react-three/fiber](https://github.com/pmndrs/react-three-fiber). Write a three.js scene as React, run it native on iOS and Android through `@nativescript/canvas`, render it with WebGPU.
 
-This is a technical preview, meant to be iterated on and eventually folded into the broader react-three and NativeScript ecosystems. The package keeps its real name, `@react-three/nativescript`, but it's marked `private: true`, so nothing publishes from here yet. It runs against the published `@react-three/fiber` alpha and ships a working demo plus a starter template, with the build and release wiring laid out in one place so it's easy to pick apart.
+This is a technical preview, meant to be iterated on and eventually folded into the broader react-three and NativeScript ecosystems. The package is marked `private: true`, so nothing publishes from here yet. It runs against the published `@react-three/fiber` alpha and ships a working demo plus a starter template, with the build and release wiring laid out in one place so it's easy to pick apart.
 
 ## What's in here
 
